@@ -4,9 +4,9 @@ const ctx = canvas.getContext("2d");
 
 let drawFlag = false;
 let mode = "pen";
-// let img;
-let imgData;
+let img;
 let startX = 0;
+let pX = 0;
 let offsetX = 0;
 
 document.getElementById("img-input").addEventListener("change", ev => {
@@ -15,8 +15,6 @@ document.getElementById("img-input").addEventListener("change", ev => {
 
   img.onload = () => {
     let srcCtx = srcCanvas.getContext("2d");
-    // const SRC_CANVAS_W = 500;
-    // const SRC_CANVAS_H = 500 * (img.height / img.width);
     const SRC_CANVAS_W = 100 * (img.width / img.height);
     const SRC_CANVAS_H = 100;
     srcCanvas.width = SRC_CANVAS_W;
@@ -32,21 +30,17 @@ document.getElementById("img-input").addEventListener("change", ev => {
       SRC_CANVAS_W,
       SRC_CANVAS_H
     );
-    imgData = srcCtx.getImageData(0, 0, srcCanvas.width, srcCanvas.height);
   };
 });
 
 function drawBg() {
-  // let ctx = canvas.getContext("2d");
   ctx.fillStyle = "rgb(255, 255, 255)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 drawBg();
 
 document.getElementById("pen-btn").addEventListener("mousedown", ev => {
-  // ペンフラグにする
   mode = "pen";
-  // let ctx = canvas.getContext("2d");
   ctx.strokeStyle = "rgb(0, 0, 0)";
 });
 
@@ -55,14 +49,11 @@ document.getElementById("sampling-btn").addEventListener("mousedown", ev => {
 });
 
 document.getElementById("eraser-btn").addEventListener("mousedown", ev => {
-  // 消しゴムフラグにする
   mode = "eraser";
-  // let ctx = canvas.getContext("2d");
   ctx.strokeStyle = "rgb(255, 255, 255)";
 });
 
 document.getElementById("save-btn").addEventListener("mousedown", ev => {
-  // 保存する
   const base64 = canvas.toDataURL("image/jpeg");
   document.getElementById("save-btn").href = base64;
 });
@@ -90,14 +81,16 @@ function drawSampling(x, y) {
   if (!drawFlag) {
     offsetX = 0;
   }
-  ctx.putImageData(
-    imgData,
-    x,
-    y - imgData.height / 2.0,
+  ctx.drawImage(
+    srcCanvas,
     offsetX,
     0,
     1,
-    imgData.height
+    srcCanvas.height,
+    x,
+    y - srcCanvas.height / 2.0,
+    pX - x,
+    srcCanvas.height
   );
   offsetX++;
 }
@@ -110,6 +103,7 @@ canvas.addEventListener("mousedown", ev => {
     drawSampling(x, y);
   }
   drawFlag = true;
+  pX = x;
 });
 
 canvas.addEventListener("mousemove", ev => {
@@ -120,6 +114,7 @@ canvas.addEventListener("mousemove", ev => {
   } else if (mode === "sampling") {
     drawSampling(x, y);
   }
+  pX = x;
 });
 
 canvas.addEventListener("mouseup", ev => {
