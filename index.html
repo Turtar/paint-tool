@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <input type="file" id="img-input" />
+
+    <button id="pen-btn">ペン</button>
+    <button id="sampling-btn">サンプリング</button>
+    <button id="eraser-btn">消しゴム</button>
+    <a id="save-btn" href="#" download="canvas.jpg">保存</a>
+    <br />
+    <canvas
+      id="canvas"
+      width="400"
+      height="400"
+      style="border: 1px solid black"
+    ></canvas>
+    <canvas id="src-canvas" style="border: 1px solid black"></canvas>
+    <script src="src/script.js"></script>
+  </body>
+</html>
