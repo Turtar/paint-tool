@@ -1,17 +1,24 @@
-const canvas = document.getElementById('canvas');
-const srcCanvas = document.getElementById('src-canvas');
+const canvas = document.getElementById("canvas");
+const srcCanvas = document.getElementById("src-canvas");
+const ctx = canvas.getContext("2d");
 
 let drawFlag = false;
-let mode = 'pen';
+let mode = "pen";
+// let img;
+let imgData;
+let startX = 0;
+let offsetX = 0;
 
-document.getElementById('img-input').addEventListener('change', ev => {
-  let img = new Image();
+document.getElementById("img-input").addEventListener("change", ev => {
+  img = new Image();
   img.src = window.URL.createObjectURL(ev.target.files[0]);
 
   img.onload = () => {
-    let srcCtx = srcCanvas.getContext('2d');
-    const SRC_CANVAS_W = 500;
-    const SRC_CANVAS_H = 500 * (img.height / img.width);
+    let srcCtx = srcCanvas.getContext("2d");
+    // const SRC_CANVAS_W = 500;
+    // const SRC_CANVAS_H = 500 * (img.height / img.width);
+    const SRC_CANVAS_W = 100 * (img.width / img.height);
+    const SRC_CANVAS_H = 100;
     srcCanvas.width = SRC_CANVAS_W;
     srcCanvas.height = SRC_CANVAS_H;
     srcCtx.drawImage(
@@ -25,38 +32,39 @@ document.getElementById('img-input').addEventListener('change', ev => {
       SRC_CANVAS_W,
       SRC_CANVAS_H
     );
+    imgData = srcCtx.getImageData(0, 0, srcCanvas.width, srcCanvas.height);
   };
 });
 
 function drawBg() {
-  let ctx = canvas.getContext('2d');
-  ctx.fillStyle = 'rgb(255, 255, 255)';
+  // let ctx = canvas.getContext("2d");
+  ctx.fillStyle = "rgb(255, 255, 255)";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 drawBg();
 
-document.getElementById('pen-btn').addEventListener('mousedown', ev => {
+document.getElementById("pen-btn").addEventListener("mousedown", ev => {
   // ペンフラグにする
-  mode = 'pen';
-  let ctx = canvas.getContext('2d');
-  ctx.strokeStyle = 'rgb(0, 0, 0)';
+  mode = "pen";
+  // let ctx = canvas.getContext("2d");
+  ctx.strokeStyle = "rgb(0, 0, 0)";
 });
 
-document.getElementById('sampling-btn').addEventListener('mousedown', ev => {
-  mode = 'sampling';
+document.getElementById("sampling-btn").addEventListener("mousedown", ev => {
+  mode = "sampling";
 });
 
-document.getElementById('eraser-btn').addEventListener('mousedown', ev => {
+document.getElementById("eraser-btn").addEventListener("mousedown", ev => {
   // 消しゴムフラグにする
-  mode = 'eraser';
-  let ctx = canvas.getContext('2d');
-  ctx.strokeStyle = 'rgb(255, 255, 255)';
+  mode = "eraser";
+  // let ctx = canvas.getContext("2d");
+  ctx.strokeStyle = "rgb(255, 255, 255)";
 });
 
-document.getElementById('save-btn').addEventListener('mousedown', ev => {
+document.getElementById("save-btn").addEventListener("mousedown", ev => {
   // 保存する
-  const base64 = canvas.toDataURL('image/jpeg');
-  document.getElementById('save-btn').href = base64;
+  const base64 = canvas.toDataURL("image/jpeg");
+  document.getElementById("save-btn").href = base64;
 });
 
 function getMousePosition(ev) {
@@ -66,80 +74,54 @@ function getMousePosition(ev) {
   return [x, y];
 }
 
-let initX = 0;
-canvas.addEventListener('mousedown', ev => {
-  // マウスを押したときの最初の一点を指定
-  // 描画フラグを立てる
-
-  // ペンとサンプリングモードを変更
-
-  drawFlag = true;
-  let ctx = canvas.getContext('2d');
-
-  let [x, y] = getMousePosition(ev);
-  initX = 0;
-
-  ctx.fillRect(x, y, 1, 1);
-
-  if (mode === 'pen' || mode === 'eraser') {
+function drawPen(x, y) {
+  if (!drawFlag) {
+    ctx.fillRect(x, y, 1, 1);
     ctx.beginPath();
     ctx.moveTo(x, y);
-  } else if (mode === 'sampling') {
-    console.log();
-    // サンプリンぐの描画をする
-    const srcCtx = srcCanvas.getContext('2d');
+    return;
+  }
+  ctx.lineTo(x, y);
+  ctx.stroke();
+}
 
-    let imageData = srcCtx.getImageData(
-      0,
-      0,
-      srcCanvas.width,
-      srcCanvas.height
-    );
-    ctx.putImageData(
-      imageData,
-      x,
-      y - imageData.height / 2.0,
-      x,
-      0,
-      1,
-      imageData.height
-    );
+function drawSampling(x, y) {
+  // サンプリンぐの描画をする
+  if (!drawFlag) {
+    offsetX = 0;
   }
-});
-canvas.addEventListener('mousemove', ev => {
-  console.log(true);
-  // 描画フラグがたってる間
-  // マウスを押しながら動かしたときにラインを引く
-  if (!drawFlag) return;
-  let ctx = canvas.getContext('2d');
+  ctx.putImageData(
+    imgData,
+    x,
+    y - imgData.height / 2.0,
+    offsetX,
+    0,
+    1,
+    imgData.height
+  );
+  offsetX++;
+}
+
+canvas.addEventListener("mousedown", ev => {
   let [x, y] = getMousePosition(ev);
-  if (mode === 'pen' || mode === 'eraser') {
-    ctx.lineTo(x, y);
-    ctx.stroke();
-  } else if (mode === 'sampling') {
-    // サンプリンぐの描画をする
-    const srcCtx = srcCanvas.getContext('2d');
-    let imageData = srcCtx.getImageData(
-      0,
-      0,
-      srcCanvas.width,
-      srcCanvas.height
-    );
-    ctx.putImageData(
-      imageData,
-      x,
-      y - imageData.height / 2.0,
-      initX,
-      0,
-      1,
-      imageData.height
-    );
-    initX = x;
+  if (mode === "pen" || mode === "eraser") {
+    drawPen(x, y);
+  } else if (mode === "sampling") {
+    drawSampling(x, y);
+  }
+  drawFlag = true;
+});
+
+canvas.addEventListener("mousemove", ev => {
+  if (!drawFlag) return;
+  let [x, y] = getMousePosition(ev);
+  if (mode === "pen" || mode === "eraser") {
+    drawPen(x, y);
+  } else if (mode === "sampling") {
+    drawSampling(x, y);
   }
 });
-canvas.addEventListener('mouseup', ev => {
-  // マウスを離したときにラインを引くのを終了する
-  // 描画フラグをおる
-  //   ctx.closePath();
+
+canvas.addEventListener("mouseup", ev => {
   drawFlag = false;
 });
