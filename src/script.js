@@ -1,20 +1,20 @@
-const canvas = document.getElementById("canvas");
-const srcCanvas = document.getElementById("src-canvas");
-const ctx = canvas.getContext("2d");
+const canvas = document.getElementById('canvas');
+const srcCanvas = document.getElementById('src-canvas');
+const ctx = canvas.getContext('2d');
 
 let drawFlag = false;
-let mode = "pen";
+let mode = 'pen';
 let img;
 let startX = 0;
 let pX = 0;
 let offsetX = 0;
 
-document.getElementById("img-input").addEventListener("change", ev => {
+document.getElementById('img-input').addEventListener('change', ev => {
   img = new Image();
   img.src = window.URL.createObjectURL(ev.target.files[0]);
 
   img.onload = () => {
-    let srcCtx = srcCanvas.getContext("2d");
+    let srcCtx = srcCanvas.getContext('2d');
     const SRC_CANVAS_W = 100 * (img.width / img.height);
     const SRC_CANVAS_H = 100;
     srcCanvas.width = SRC_CANVAS_W;
@@ -34,28 +34,28 @@ document.getElementById("img-input").addEventListener("change", ev => {
 });
 
 function drawBg() {
-  ctx.fillStyle = "rgb(255, 255, 255)";
+  ctx.fillStyle = 'rgb(255, 255, 255)';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 drawBg();
 
-document.getElementById("pen-btn").addEventListener("mousedown", ev => {
-  mode = "pen";
-  ctx.strokeStyle = "rgb(0, 0, 0)";
+document.getElementById('pen-btn').addEventListener('mousedown', ev => {
+  mode = 'pen';
+  ctx.strokeStyle = 'rgb(0, 0, 0)';
 });
 
-document.getElementById("sampling-btn").addEventListener("mousedown", ev => {
-  mode = "sampling";
+document.getElementById('sampling-btn').addEventListener('mousedown', ev => {
+  mode = 'sampling';
 });
 
-document.getElementById("eraser-btn").addEventListener("mousedown", ev => {
-  mode = "eraser";
-  ctx.strokeStyle = "rgb(255, 255, 255)";
+document.getElementById('eraser-btn').addEventListener('mousedown', ev => {
+  mode = 'eraser';
+  ctx.strokeStyle = 'rgb(255, 255, 255)';
 });
 
-document.getElementById("save-btn").addEventListener("mousedown", ev => {
-  const base64 = canvas.toDataURL("image/jpeg");
-  document.getElementById("save-btn").href = base64;
+document.getElementById('save-btn').addEventListener('mousedown', ev => {
+  const base64 = canvas.toDataURL('image/jpeg');
+  document.getElementById('save-btn').href = base64;
 });
 
 function getMousePosition(ev) {
@@ -80,6 +80,7 @@ function drawSampling(x, y) {
   // サンプリンぐの描画をする
   if (!drawFlag) {
     offsetX = 0;
+    pX = x;
   }
   ctx.drawImage(
     srcCanvas,
@@ -93,30 +94,30 @@ function drawSampling(x, y) {
     srcCanvas.height
   );
   offsetX++;
+  pX = x;
 }
 
-canvas.addEventListener("mousedown", ev => {
+canvas.addEventListener('mousedown', ev => {
   let [x, y] = getMousePosition(ev);
-  if (mode === "pen" || mode === "eraser") {
+  if (mode === 'pen' || mode === 'eraser') {
     drawPen(x, y);
-  } else if (mode === "sampling") {
+  } else if (mode === 'sampling') {
     drawSampling(x, y);
   }
   drawFlag = true;
-  pX = x;
 });
 
-canvas.addEventListener("mousemove", ev => {
+canvas.addEventListener('mousemove', ev => {
   if (!drawFlag) return;
   let [x, y] = getMousePosition(ev);
-  if (mode === "pen" || mode === "eraser") {
+  if (mode === 'pen' || mode === 'eraser') {
     drawPen(x, y);
-  } else if (mode === "sampling") {
+  } else if (mode === 'sampling') {
     drawSampling(x, y);
   }
   pX = x;
 });
 
-canvas.addEventListener("mouseup", ev => {
+canvas.addEventListener('mouseup', ev => {
   drawFlag = false;
 });
